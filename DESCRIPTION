@@ -1,8 +1,8 @@
 Package: elements
-Title: What the Package Does (One Line, Title Case)
+Title: Facilitate data treatment and visualization
 Version: 0.0.0.9000
 Authors@R: 
-    person("First", "Last", , "first.last@example.com", role = c("aut", "cre"))
+    person("Arnaud", "Marois", , "first.last@example.com", role = c("aut", "cre"))
 Description: Advanced plotting and statistical analysis tools for environmental and ecotoxicological datasets.
 License: MIT + file LICENSE
 Encoding: UTF-8
