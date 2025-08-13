@@ -11,6 +11,8 @@ usethis::use_package("grid")
 usethis::use_package("gridExtra")
 usethis::use_package("glue")
 usethis::use_package("biostat")
+usethis::use_package("forcats")
+
 
 #' Generate customizable boxplots or meanplots with statistical tests
 #'
@@ -102,6 +104,8 @@ usethis::use_package("biostat")
 #' @return A plot or list of plots.
 #' @export
 
+var.adjust <- list()
+var.method <- list()
 
 get.plot <- function(
     data,
@@ -161,9 +165,6 @@ get.plot <- function(
   kruskal <- c("kruskal", "kruskal-wallis", "kw")
   student <- c("student", "t.test", "t")
   wilcox <- c("wilcox", "wilcox.test", "wilcoxon", "mann-whitney")
-
-  var.adjust <- list()
-  var.method <- list()
 
   if (!is.character(x)) {
     x <- rlang::as_name(rlang::ensym(x))
