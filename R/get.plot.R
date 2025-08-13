@@ -1,26 +1,10 @@
-usethis::use_package("dplyr")
-usethis::use_package("ggplot2")
-usethis::use_package("multcompView")
-usethis::use_package("FSA")
-usethis::use_package("rlang")
-usethis::use_package("rcompanion")
-usethis::use_package("tibble")
-usethis::use_package("scales")
-usethis::use_package("cowplot")
-usethis::use_package("grid")
-usethis::use_package("gridExtra")
-usethis::use_package("glue")
-usethis::use_package("biostat")
-usethis::use_package("forcats")
-
-
 #' Generate customizable boxplots or meanplots with statistical tests
 #'
 #' This function generates boxplots or meanplots for one or multiple response variables
-#' with options for ANOVA, Kruskal-Wallis, t-tests, and Wilcoxon tests, plus customizable plot options.
+#' with options for ANOVA, Kruskal-Wallis, t-tests, and Wilcoxon tests, plus plenty of customizable plot options.
 #'
 #' @importFrom dplyr group_by mutate arrange desc ungroup
-#' @importFrom rlang as_name ensym
+#' @importFrom rlang as_name ensym .data :=
 #' @importFrom forcats fct_inorder
 #' @importFrom tibble tibble
 #' @importFrom multcompView multcompLetters2
@@ -33,6 +17,14 @@ usethis::use_package("forcats")
 #' @importFrom gridExtra grid.arrange arrangeGrob
 #' @importFrom glue glue
 #' @importFrom biostat make_cld
+#' @importFrom magrittr %>%
+#' @importFrom stats as.formula aov pairwise.t.test TukeyHSD kruskal.test t.test sd wilcox.test
+#' @importFrom utils head
+#' @importFrom dplyr filter summarise slice left_join bind_rows
+#' @importFrom ggplot2 aes scale_x_discrete scale_fill_manual geom_errorbar
+#' @importFrom ggplot2 geom_point geom_segment expansion annotate element_text
+#' @importFrom ggplot2 element_blank ggsave
+#' @importFrom grid gpar
 #'
 #' @param data A data.frame.
 #' @param response Character vector of response variables.
@@ -104,9 +96,6 @@ usethis::use_package("forcats")
 #' @return A plot or list of plots.
 #' @export
 
-var.adjust <- list()
-var.method <- list()
-
 get.plot <- function(
     data,
     response,
@@ -156,11 +145,16 @@ get.plot <- function(
     by.var = FALSE,
     plot.height = 5,
     plot.width = 5,
+    plot.name = "plot_{var}.png",
     save.grid = FALSE,
     grid.name = "grid.png",
     grid.height = 8,
     grid.width = 7
 ) {
+
+  if (is.null(var.adjust)) var.adjust <- list()
+  if (is.null(var.method)) var.method <- list()
+
   anova <- c("anova", "aov")
   kruskal <- c("kruskal", "kruskal-wallis", "kw")
   student <- c("student", "t.test", "t")
@@ -171,7 +165,7 @@ get.plot <- function(
   }
 
   if (length(x) != 1 || !nzchar(x)) {
-    stop("😞 The `x` argument must be a single non-empty variable.")
+    stop("The `x` argument must be a single non-empty variable.")
   }
 
   if (save.plot == TRUE | save.grid == TRUE) {
@@ -264,7 +258,7 @@ get.plot <- function(
 
   #Stops before Loop
   if (is.null(method) && is.null(var.method)) {
-    stop("😞 You must specify at least one of the arguments `method` or `var.method`.")
+    stop("You must specify at least one of the arguments `method` or `var.method`.")
   }
   validate_response(var.method, "var.method", response)
   validate_response(var.adjust, "var.adjust", response)
@@ -345,111 +339,111 @@ get.plot <- function(
       data
     }
 
-    #Stops & Messages
+    #Stops and Messages
     if (missing(x)) {
-      stop("😞 The `x` argument is required.")
+      stop("The `x` argument is required.")
     }
     if (is.null(current_method)) {
-      stop(glue::glue("😞 No statistical method is defined for the variable '{var}'."))
+      stop(glue::glue("No statistical method is defined for the variable '{var}'."))
     }
-    if (!is.null(method) && !is.null(var.method)) {
-      stop("😞 Please provide only one of 'method' or 'var.method', not both.")
+    if (!is.null(adjust) && length(var.adjust) > 0) {
+      stop("You cannot use both `adjust` and `var.adjust` at the same time.")
     }
-    if (!is.null(adjust) && !is.null(var.adjust)) {
-      stop("😞 Please provide only one of 'adjust' or 'var.adjust', not both.")
+    if (!is.null(method) && length(var.method) > 0) {
+      stop("You cannot use both `method` and `var.method` at the same time.")
     }
     if (current_method %in% student && !is.null(current_adjust)) {
-      stop("😞 The `adjust` argument is not supported for the 't.test' method.")
+      stop("The `adjust` argument is not supported for the 't.test' method.")
     }
     if (current_method %in% student && (show.ph || show.letters || show.brackets)) {
-      stop("😞 The arguments `show.ph`, `show.letters`, and `show.brackets` are not supported for the 't.test' method.")
+      stop("The arguments `show.ph`, `show.letters`, and `show.brackets` are not supported for the 't.test' method.")
     }
     if (current_method %in% wilcox && !is.null(current_adjust)) {
-      stop("😞 The `adjust` argument is not supported for the 'wilcox.test' method.")
+      stop("The `adjust` argument is not supported for the 'wilcox.test' method.")
     }
     if (current_method %in% wilcox && (show.ph || show.letters || show.brackets)) {
-      stop("😞 The arguments `show.ph`, `show.letters`, and `show.brackets` are not supported for the 'wilcox.test' method.")
+      stop("The arguments `show.ph`, `show.letters`, and `show.brackets` are not supported for the 'wilcox.test' method.")
     }
     if (plot.type == "meanplot" && !missing(fill.box)) {
-      message("⚠️ The fill.box argument is ignored when plot.type = 'meanplot'.")
+      message("The fill.box argument is ignored when plot.type = 'meanplot'.")
     }
     if (plot.type == "boxplot" && !missing(fill.mean)) {
-      message("⚠️ The fill.mean argument is ignored when plot.type = 'boxplot'.")
+      message("The fill.mean argument is ignored when plot.type = 'boxplot'.")
     }
     if (plot.type == "boxplot" && !missing(error.width)) {
-      message("⚠️ The error.width argument is ignored when plot.type = 'boxplot'.")
+      message("The error.width argument is ignored when plot.type = 'boxplot'.")
     }
     if (plot.type == "boxplot" && !missing(mean.size)) {
-      message("⚠️ The mean.size argument is ignored when plot.type = 'boxplot'.")
+      message("The mean.size argument is ignored when plot.type = 'boxplot'.")
     }
     if (save.plot == FALSE && !missing(plot.height)) {
-      message("⚠️ The plot.height argument is ignored when save.plot = FALSE.")
+      message("The plot.height argument is ignored when save.plot = FALSE.")
     }
     if (save.plot == FALSE && !missing(plot.width)) {
-      message("⚠️ The plot.width argument is ignored when save.plot = FALSE.")
+      message("The plot.width argument is ignored when save.plot = FALSE.")
     }
     if (grid == FALSE && !missing(grid.axis)) {
-      message("⚠️ The grid.axis argument is ignored when grid = FALSE.")
+      message("The grid.axis argument is ignored when grid = FALSE.")
     }
     if (grid == FALSE && !missing(grid.axis.y)) {
-      message("⚠️ The grid.axis.y argument is ignored when grid = FALSE.")
+      message("The grid.axis.y argument is ignored when grid = FALSE.")
     }
     if (grid == FALSE && !missing(grid.axis.x)) {
-      message("⚠️ The grid.axis.x argument is ignored when grid = FALSE.")
+      message("The grid.axis.x argument is ignored when grid = FALSE.")
     }
     if (grid == FALSE && !missing(label.size)) {
-      message("⚠️ The label.size argument is ignored when grid = FALSE.")
+      message("The label.size argument is ignored when grid = FALSE.")
     }
     if (grid == FALSE && !missing(label.face)) {
-      message("⚠️ The label.face argument is ignored when grid = FALSE.")
+      message("The label.face argument is ignored when grid = FALSE.")
     }
     if (grid == FALSE && !missing(grid.name)) {
-      message("⚠️ The grid.name argument is ignored when grid = FALSE.")
+      message("The grid.name argument is ignored when grid = FALSE.")
     }
     if (save.grid == FALSE && !missing(grid.name)) {
-      message("⚠️ The grid.name argument is ignored when save.grid = FALSE.")
+      message("The grid.name argument is ignored when save.grid = FALSE.")
     }
     if (grid == FALSE && !missing(grid.height)) {
-      message("⚠️ The grid.height argument is ignored when grid = FALSE.")
+      message("The grid.height argument is ignored when grid = FALSE.")
     }
     if (save.grid == FALSE && !missing(grid.height)) {
-      message("⚠️ The grid.height argument is ignored when save.grid = FALSE.")
+      message("The grid.height argument is ignored when save.grid = FALSE.")
     }
     if (grid == FALSE && !missing(grid.width)) {
-      message("⚠️ The grid.width argument is ignored when grid = FALSE.")
+      message("The grid.width argument is ignored when grid = FALSE.")
     }
     if (save.grid == FALSE && !missing(grid.width)) {
-      message("⚠️ The grid.width argument is ignored when save.grid = FALSE.")
+      message("The grid.width argument is ignored when save.grid = FALSE.")
     }
     if (!plot.type %in% c("boxplot", "meanplot")) {
-      stop("😞 The plot.type argument must be either 'boxplot' or 'meanplot'.")
+      stop("The plot.type argument must be either 'boxplot' or 'meanplot'.")
     }
     if (plot.type == "boxplot" && !fill %in% c("box", "point", FALSE)) {
-      stop("😞 The fill argument must be 'box', 'point', or FALSE when plot.type = 'boxplot'.")
+      stop("The fill argument must be 'box', 'point', or FALSE when plot.type = 'boxplot'.")
     }
     if (plot.type == "meanplot" && !fill %in% c("point", FALSE)) {
-      stop("😞 The fill argument must be 'point' or FALSE when plot.type = 'meanplot'.")
+      stop("The fill argument must be 'point' or FALSE when plot.type = 'meanplot'.")
     }
     if (save.plot == FALSE && !missing(by.var)) {
-      stop("😞 The by.element argument cannot be used when save.plot == FALSE.")
+      stop("The by.element argument cannot be used when save.plot == FALSE.")
     }
     if (grid == FALSE && !missing(save.grid)) {
-      stop("😞 The save.grid argument cannot be used when grid == FALSE.")
+      stop("The save.grid argument cannot be used when grid == FALSE.")
     }
     if (current_method %in% c(anova, kruskal)) {
       if (!missing(order.x) && length(order.x) < 3) {
-        stop("😞 `order.x` must contain at least 3 groups")
+        stop("`order.x` must contain at least 3 groups")
       }
       if (!missing(label.x) && length(label.x) < 3) {
-        stop("😞 `label.x`  must contain at least 3 groups")
+        stop("`label.x`  must contain at least 3 groups")
       }
     }
     if (current_method %in% c(student, wilcox)) {
       if (!missing(order.x) && length(order.x) != 2) {
-        stop("😞 `order.x` must contain exactly 2 groups")
+        stop("`order.x` must contain exactly 2 groups")
       }
       if (!missing(label.x) && length(label.x) != 2) {
-        stop("😞 `label.x` must contain exactly 2 groups")
+        stop("`label.x` must contain exactly 2 groups")
       }
     }
     if (!current_method %in% c(anova, kruskal, student, wilcox)) {
@@ -552,7 +546,6 @@ get.plot <- function(
       #T.test
     } else if (current_method %in% student) {
 
-      # Forcer x en facteur
       data2[[x]] <- factor(data2[[x]])
 
       if (length(levels(data2[[x]])) != 2) {
@@ -657,7 +650,6 @@ get.plot <- function(
     min_data <- min(data2[[var]], na.rm = TRUE)
     range_data <- max_data - min_data
 
-    # Add 10% padding on top
     max_y_limit <- max_data + 0.1 * range_data
 
       p <- ggplot(data2, aes(x = .data[[x]], y = .data[[var]])) +
@@ -704,13 +696,12 @@ get.plot <- function(
       }
 
     letters_df <- dt %>%
-      mutate(x_pos = as.numeric(.data[[x]]))
+      mutate(x_pos = as.numeric(factor(.data[[x]])))
 
     y_offset <- diff(range(y_breaks)) * 0.08
 
     if (!is.null(cld) & show.letters == TRUE) {
 
-      # Calculer ymax_plot pour garder la même échelle y dans les deux cas
       runs <- rle(as.character(letters_df$cld))
       run_lengths <- runs$lengths
       run_letters <- runs$values
@@ -805,7 +796,6 @@ get.plot <- function(
         }
 
       } else {
-        # show.brackets == FALSE : on affiche les lettres isolées décalées
         p <- p +
           geom_text(data = dt,
                     aes(label = cld, y = max + y_offset),
@@ -814,7 +804,6 @@ get.plot <- function(
                     fontface = letters.face)
       }
 
-      # Ajouter le scale_y_continuous dans les deux cas, avec la même limite y
       p <- p +
         scale_y_continuous(name = if (!is.null(axis.title.y)) axis.title.y else paste(var),
                            limits = c(min(y_breaks), ymax_plot),
