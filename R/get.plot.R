@@ -160,12 +160,12 @@
 #'
 #' @return
 #' - If `grid = TRUE`: returns a single `ggplot` object representing the combined grid of all response variable plots.
-#' - If `grid = FALSE`: the function invisibly prints each plot to the current graphics device and stores them in internal lists (`plots`, `plots1`) for grid construction if needed.
+#' - If `grid = FALSE`: each plot (`p`) is printed to the current graphics device as it is built.
+#'   In addition, the function invisibly returns a list containing:
+#'   - `plots`: the individual `ggplot` objects (`p`) for each response variable.
+#'   - `plots1`: the alternative versions of each plot (`p1`) used for grid construction.
 #' - If `export.test = TRUE`: in addition to plots, a PDF file (`Stats_Report.pdf`) is created in the `"elements"` folder containing tables of statistical test results, post-hoc results, and compact letter displays (CLD).
-#' - If `save.plot = TRUE` or `save.grid = TRUE`: plots are saved to file as PNG images in the specified location.
-#'
-#' In all cases, the function is primarily used for its side effects (plots and exports). The main value returned is either a grid `ggplot` object (if `grid = TRUE`) or `NULL` invisibly.
-#' @export
+#' - If `save.plot = TRUE` or `save.grid = TRUE`: plots or the grid are saved to file as PNG images in the specified location.
 
 get.plot <- function(
     data,
@@ -1366,7 +1366,9 @@ get.plot <- function(
       )
     }
 
-    invisible(print(p))
+    if (!grid) {
+      print(p)
+    }
   }
 
   export_pdf <- function(export_details, filename = "Stats_Report.pdf") {
@@ -1527,5 +1529,8 @@ get.plot <- function(
     }
 
     return(grid_plot)
-  }
+  } else { invisible(list(
+    plots = plots,
+    plots1 = plots1))
+    }
 }

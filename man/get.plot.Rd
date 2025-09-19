@@ -229,12 +229,15 @@ Options include \code{"classic"}, \code{"bw"}, \code{"minimal"}, \code{"light"},
 \value{
 \itemize{
 \item If \code{grid = TRUE}: returns a single \code{ggplot} object representing the combined grid of all response variable plots.
-\item If \code{grid = FALSE}: the function invisibly prints each plot to the current graphics device and stores them in internal lists (\code{plots}, \code{plots1}) for grid construction if needed.
-\item If \code{export.test = TRUE}: in addition to plots, a PDF file (\code{Stats_Report.pdf}) is created in the \code{"elements"} folder containing tables of statistical test results, post-hoc results, and compact letter displays (CLD).
-\item If \code{save.plot = TRUE} or \code{save.grid = TRUE}: plots are saved to file as PNG images in the specified location.
+\item If \code{grid = FALSE}: each plot (\code{p}) is printed to the current graphics device as it is built.
+In addition, the function invisibly returns a list containing:
+\itemize{
+\item \code{plots}: the individual \code{ggplot} objects (\code{p}) for each response variable.
+\item \code{plots1}: the alternative versions of each plot (\code{p1}) used for grid construction.
 }
-
-In all cases, the function is primarily used for its side effects (plots and exports). The main value returned is either a grid \code{ggplot} object (if \code{grid = TRUE}) or \code{NULL} invisibly.
+\item If \code{export.test = TRUE}: in addition to plots, a PDF file (\code{Stats_Report.pdf}) is created in the \code{"elements"} folder containing tables of statistical test results, post-hoc results, and compact letter displays (CLD).
+\item If \code{save.plot = TRUE} or \code{save.grid = TRUE}: plots or the grid are saved to file as PNG images in the specified location.
+}
 }
 \description{
 This function creates boxplots or mean plots for one or more response variables,
