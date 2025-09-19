@@ -1,0 +1,36 @@
+Package: elements
+Title: Tools for Data Treatment and Visualization
+Version: 0.1.0
+Authors@R: 
+    person("Arnaud", "Marois", , "marois.arnaud@courrier.uqam.ca", role = c("aut", "cre"))
+Description: Advanced plotting and statistical analysis tools for environmental and ecotoxicological datasets.
+License: MIT + file LICENSE
+Encoding: UTF-8
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.3.1
+Imports: 
+    dplyr,
+    broom,
+    rlang,
+    forcats,
+    tibble,
+    multcompView,
+    FSA,
+    ggplot2,
+    rcompanion,
+    scales,
+    cowplot,
+    grid,
+    gridExtra,
+    glue,
+    magrittr,
+    stats,
+    utils,
+    ggnewscale,
+    RColorBrewer,
+    patchwork,
+    biostat
+Remotes:
+    github::GegznaV/biostat
+URL: https://github.com/ArnaudMarois/elements
+BugReports: https://github.com/ArnaudMarois/elements/issues
